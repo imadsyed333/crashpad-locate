@@ -1,0 +1,30 @@
+services:
+  airflow:
+    image: apache/airflow:2.8.1
+    container_name: airflow
+    restart: always
+    environment:
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - "_PIP_ADDITIONAL_REQUIREMENTS=pandas psycopg[binary]"
+      - AIRFLOW_UID=${AIRFLOW_UID:-50000}
+      - AIRFLOW_USERNAME=${AIRFLOW_USERNAME}
+      - AIRFLOW_PASSWORD=${AIRFLOW_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - PYTHONPATH=/opt/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./data:/opt/airflow/data
+      - ./src:/opt/airflow/src
+      - ./scripts:/opt/airflow/scripts
+    ports:
+      - "8080:8080"
+    user: "0:0"
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /opt/airflow/data/raw /opt/airflow/data/processed
+        chown -R "${AIRFLOW_UID:-50000}:0" /opt/airflow/data
+        exec gosu "${AIRFLOW_UID:-50000}" /entrypoint "$@"
+      - --
+    command: ["bash", "/opt/airflow/scripts/init_airflow.sh"]
