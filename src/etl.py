@@ -12,7 +12,7 @@ CKAN_PACKAGE = (
     "?id=intersection-file-city-of-toronto"
 )
 RESOURCE_NAME = "Centreline Intersection - 4326.csv"
-DATA = Path("/opt/airflow/data")
+DATA = Path(os.environ.get("DATA_DIR", "/opt/airflow/data"))
 
 
 def extract():
@@ -88,3 +88,9 @@ def load():
             SELECT id, name, ST_SetSRID(ST_MakePoint(lon, lat), 4326)::geography
             FROM stg
         """)
+
+
+if __name__ == "__main__":
+    extract()
+    transform()
+    load()
