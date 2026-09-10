@@ -31,10 +31,10 @@ uvicorn api.main:app
 `POST /nearest` body: `{"lat": 43.65, "lon": -79.38}`
 
 ```json
-{"name": "Yonge St / Dundas St E", "distance_m": 42.3, "direction": "N"}
+{"name": "Yonge St / Dundas St E", "distance_m": 42.3, "direction": "North"}
 ```
 
-`direction` is `N`/`E`/`S`/`W` from the intersection toward the query point, or `null` when distance is 0. Empty table returns 503.
+`direction` is `North`/`East`/`South`/`West` from the intersection toward the query point, or `null` when distance is 0. Empty table returns 503.
 
 ## Cardinal helper
 

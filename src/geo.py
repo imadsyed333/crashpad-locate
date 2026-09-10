@@ -2,30 +2,30 @@ def cardinal_from_bearing(bearing_deg: float) -> str:
     """Map clockwise-from-north degrees to a 4-point cardinal.
 
     90° sectors; midpoints inclusive toward the clockwise cardinal
-    (N 315–45, E 45–135, S 135–225, W 225–315).
+    (North 315–45, East 45–135, South 135–225, West 225–315).
     """
     b = bearing_deg % 360
     if 45 <= b < 135:
-        return "E"
+        return "East"
     if 135 <= b < 225:
-        return "S"
+        return "South"
     if 225 <= b < 315:
-        return "W"
-    return "N"
+        return "West"
+    return "North"
 
 
 if __name__ == "__main__":
     cases = {
-        0: "N",
-        90: "E",
-        180: "S",
-        270: "W",
-        45: "E",
-        135: "S",
-        225: "W",
-        315: "N",
-        359: "N",
-        44.9: "N",
+        0: "North",
+        90: "East",
+        180: "South",
+        270: "West",
+        45: "East",
+        135: "South",
+        225: "West",
+        315: "North",
+        359: "North",
+        44.9: "North",
     }
     for deg, want in cases.items():
         got = cardinal_from_bearing(deg)
