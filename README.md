@@ -1,10 +1,10 @@
 # crashpad-locate
 
-Nearest Toronto intersection for a lat/lon. FastAPI queries Neon PostGIS (KNN); an Airflow DAG loads the City intersection file daily.
+Nearest Toronto or Peel intersection for a lat/lon. FastAPI queries PostGIS (KNN); an Airflow DAG loads City of Toronto intersections and derives Peel ones from Street Centre Line.
 
 ## Setup
 
-Copy `.env.example` to `.env` and set `DATABASE_URL` (Neon Postgres with PostGIS) plus Airflow credentials.
+Copy `.env.example` to `.env` and set Airflow credentials. Default `DATABASE_URL` points at the local PostGIS service (`postgis` hostname). For Neon, swap in that connection string (include `sslmode=require`).
 
 ```sh
 python -m venv .venv
@@ -18,11 +18,17 @@ pip install -r requirements.txt
 docker compose up
 ```
 
-Open [http://localhost:8080](http://localhost:8080), then enable and trigger `intersections_etl` (`extract` → `transform` → `load`).
+Starts PostGIS on port 5432 and Airflow on 8080. Open [http://localhost:8080](http://localhost:8080), then enable and trigger `intersections_etl` (`extract` → `transform` → `load`).
 
-The DAG looks up `Centreline Intersection - 4326.csv` on CKAN (no hardcoded resource UUID), writes `data/raw/` and `data/processed/`, then truncate-and-inserts `intersections` in Neon.
+The DAG looks up `Centreline Intersection - 4326.csv` on CKAN (no hardcoded resource UUID), pages Peel Street Centre Line from ArcGIS, writes `data/raw/` and `data/processed/`, then drop-and-inserts `intersections` in PostGIS.
 
 ## API
+
+For host-side uvicorn, set `DATABASE_URL` to use `localhost` instead of `postgis`:
+
+```env
+DATABASE_URL=postgresql://crashpad:crashpad@localhost:5432/crashpad
+```
 
 ```sh
 uvicorn api.main:app

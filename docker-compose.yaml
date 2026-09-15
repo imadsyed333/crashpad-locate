@@ -1,8 +1,29 @@
 services:
+  postgis:
+    image: postgis/postgis:16-3.5
+    container_name: crashpad-postgis
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-crashpad}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-crashpad}
+      POSTGRES_DB: ${POSTGRES_DB:-crashpad}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-crashpad} -d ${POSTGRES_DB:-crashpad}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   airflow:
     image: apache/airflow:2.8.1
     container_name: airflow
     restart: always
+    depends_on:
+      postgis:
+        condition: service_healthy
     environment:
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - "_PIP_ADDITIONAL_REQUIREMENTS=pandas psycopg[binary]"
@@ -28,3 +49,6 @@ services:
         exec gosu "${AIRFLOW_UID:-50000}" /entrypoint "$@"
       - --
     command: ["bash", "/opt/airflow/scripts/init_airflow.sh"]
+
+volumes:
+  postgis_data:
