@@ -98,7 +98,7 @@ def intersections_from_segments(features):
         props = feat.get("properties") or {}
         if str(props.get("PRIVATE") or "").upper() == "Y":
             continue
-        name = (props.get("FULLSTNAME") or "").strip()
+        name = (props.get("FULLSTNAME") or "").strip().title()
         if not name:
             continue
         path = _path_coords(feat.get("geometry"))
@@ -144,7 +144,7 @@ def _check_intersections_from_segments():
     assert len(rows) == 1, rows
     row = rows[0]
     assert row["id"] == "peel:1"
-    assert row["name"] == "MAIN ST / SIDE ST"
+    assert row["name"] == "Main St / Side St"
     assert row["lon"] == 0 and row["lat"] == 0
 
 
