@@ -20,6 +20,10 @@ ORDER BY geom <-> q.geog
 LIMIT 1
 """
 
+SAMPLE_INTERSECTIONS_SQL = """
+    SELECT name, ST_X(geom::geometry) AS lon, ST_Y(geom::geometry) AS lat FROM intersections WHERE id LIKE 'toronto%' ORDER BY random() LIMIT 40
+"""
+
 app = FastAPI()
 
 
@@ -33,6 +37,14 @@ class NearestResponse(BaseModel):
     distance_m: float
     direction: str | None
 
+class Intersection(BaseModel):
+    name: str
+    lon: float
+    lat: float
+
+class SampleIntersectionResponse(BaseModel):
+    intersections: list[Intersection]
+
 
 @app.post("/nearest", response_model=NearestResponse)
 def nearest(body: NearestRequest):
@@ -43,3 +55,14 @@ def nearest(body: NearestRequest):
     name, distance_m, bearing_deg = row
     direction = None if distance_m == 0 or bearing_deg is None else cardinal_from_bearing(bearing_deg)
     return NearestResponse(name=name, distance_m=distance_m, direction=direction)
+
+@app.get("/sample", response_model=SampleIntersectionResponse)
+def sample_intersections():
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        rows = conn.execute(SAMPLE_INTERSECTIONS_SQL).fetchall()
+    if rows is None:
+        raise HTTPException(status_code=503, detail="intersections table is empty")
+    keys = ["name", "lon", "lat"]
+    intersections = [Intersection(**dict(zip(keys, row))) for row in rows]
+    
+    return SampleIntersectionResponse(intersections=intersections)
